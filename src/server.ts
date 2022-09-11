@@ -30,6 +30,9 @@ SELECT * FROM interviewers WHERE id=@id;
 const getCompaniesFromId = db.prepare(`
 SELECT * FROM companies WHERE id=@id;
 `);
+const getCompanies = db.prepare(`
+SELECT * FROM companies;
+`);
 const getInterviewsForApplicants = db.prepare(`
 SELECT * FROM interviews WHERE applicantId = @applicantId;
 `)
@@ -67,6 +70,9 @@ VALUES(@name,@email,@position)
 const createInterview = db.prepare(`
  INSERT INTO interviews(applicantId,interviewerId,time,successful) VALUES(@applicantId,@interviewerId,@time,@successful);
 `);
+const createCompany = db.prepare(`
+ INSERT INTO companies(name,city) VALUES(@name,@city);
+`);
 
 app.get('/applicants',(req,res)=>{
     const applicants = getApplicants.all();
@@ -86,6 +92,19 @@ app.get('/interviewers',(req,res)=>{
         interviewer.interviews = getInterviewsForInterviewers.all({interviewerId: interviewer.id})
     }
     res.send(interviewers)
+})
+app.get('/companies',(req,res)=>{
+    const companies=getCompanies.all()
+    for(let company of companies){
+        const newEmployee = getPassedInterviews.all({
+          interviewerId: company.id,
+        });
+        const employee = getInterviewersForCompanies.all({
+          companyId: company.id,
+        });
+        company.employees = [employee, ...newEmployee];
+    }
+    res.send(companies)
 })
 app.get('/applicants/:id',(req,res)=>{
     const id = Number(req.params.id)
@@ -115,12 +134,13 @@ app.get("/companies/:id", (req, res) => {
   const company = getCompaniesFromId.get({ id: id });
   console.log(company);
   if (company) {
-    company.newEmployed = getPassedInterviews.all({
+    const newEmployee = getPassedInterviews.all({
       interviewerId: company.id,
     });
-    company.employer = getInterviewersForCompanies.all({
+    const employee = getInterviewersForCompanies.all({
     companyId: company.id,
     });
+    company.employees= [employee,...newEmployee]
     res.send(company);
   } else res.status(404).send({ error: "No applicant found" });
 });
@@ -221,6 +241,37 @@ app.post("/interviews", (req, res) => {
     });
     const interview = getInterviewFromId.get(changes.lastInsertRowid);
     res.send(interview);
+  }
+});
+
+app.post("/companies", (req, res) => {
+  const name = req.body.name;
+  const city = req.body.city;
+
+  const errors: string[] = [];
+
+  if (typeof name !== "string") {
+    errors.push("Name not given.");
+  }
+
+  if (typeof city !== "string") {
+    errors.push("City not given.");
+  }
+  let companies = getInterviewers.all();
+  for (let company of companies) {
+    if (company.name === name) {
+      errors.push("Company already in the db");
+    }
+  }
+  if (errors.length > 0) {
+    res.status(404).send({ errors });
+  } else {
+    const changes = createCompany.run({
+      name: name,
+      city: city,
+    });
+    const company = getCompaniesFromId.get(changes.lastInsertRowid);
+    res.send(company);
   }
 });
 

@@ -27,13 +27,13 @@ const applicants = [
 const interviewers = [
   {
     name: "Ed",
-    email:"Ed@ed.com",
-    position:"FrontEnd Developer"
+    email: "Ed@ed.com",
+    position: "FrontEnd Developer",
   },
   {
     name: "Nicolas",
-    email:"nico@nico.com",
-    position:"FullStack Developer"
+    email: "nico@nico.com",
+    position: "FullStack Developer",
   },
 ];
 const interviews = [
@@ -56,42 +56,42 @@ const interviews = [
     successful: "No",
   },
   {
-    applicantId: 1,
+    applicantId: 4,
     interviewerId: 1,
     time: "25/10/2022",
-    successful: "Yes",
+    successful: "No",
   },
   {
-    applicantId: 4,
+    applicantId: 2,
     interviewerId: 2,
     time: "22/10/2022",
-    successful:"Yes",
+    successful: "Yes",
   },
 ];
-const companies= [
+const companies = [
   {
-    id:1,
-    name:"Apple",
-    city:"Tirana"
+    id: 1,
+    name: "Apple",
+    city: "Tirana",
   },
   {
-    id:2,
-    name:"Google",
-    city:"Prishtina"
+    id: 2,
+    name: "Google",
+    city: "Prishtina",
   },
-]
-const employers=[
+];
+const employers = [
   {
-    id:1,
-    interviewerId:1,
-    companyId:1
+    id: 1,
+    interviewerId: 1,
+    companyId: 1,
   },
   {
-    id:2,
-    interviewerId:2,
-    companyId:2
-  }
-]
+    id: 2,
+    interviewerId: 2,
+    companyId: 2,
+  },
+];
 // const deleteTable = db.prepare(`
 // DROP TABLE applicants
 // `);
@@ -157,10 +157,10 @@ for (let interviewer of interviewers) {
   createInterviewer.run(interviewer);
 }
 
-// const deleteInterviews = db.prepare(`
-// DELETE FROM  interviews;
-// `);
-// deleteInterviews.run();
+const deleteInterviews = db.prepare(`
+DELETE FROM  interviews;
+`);
+deleteInterviews.run();
 
 const createInterviewsTable = db.prepare(`
 CREATE TABLE IF NOT EXISTS interviews(
@@ -194,15 +194,15 @@ CREATE TABLE IF NOT EXISTS companies(
   city TEXT,
   PRIMARY KEY(id)
 )
-`)
+`);
 createCompanyTable.run();
 
 const createCompany = db.prepare(`
 INSERT INTO companies(name,city)
 VALUES(@name,@city)
 `);
-for(let company of companies){
-  createCompany.run(company)
+for (let company of companies) {
+  createCompany.run(company);
 }
 
 const deleteEmployers = db.prepare(`
